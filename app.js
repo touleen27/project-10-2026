@@ -113,20 +113,25 @@ function render() {
 const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
 // ---------- תוצאות ----------
+// ציון כולל מתוך 150: שליש הבעה בכתב (50) + שני שליש שאלות רב-ברירה (100)
 function finishExam() {
   clearInterval(tick);
   let right = 0, total = 0;
-  const secStats = exam.sections.map((s, si) => {
-    let r = 0;
-    flat[si].forEach((x, i) => { total++; if (answers[key(si, i)] === x.q.correct) { r++; right++; } });
-    return { name: s.name, r, n: flat[si].length };
-  });
-  const pct = total ? right / total : 0;
-  const est = Math.round(SC.min + (SC.max - SC.min) * pct);
+  exam.sections.forEach((s, si) => flat[si].forEach((x, i) => { total++; if (answers[key(si, i)] === x.q.correct) right++; }));
+  const mc = total ? Math.round(right / total * SC.mcMax * 10) / 10 : 0;
+  const hasW = !!exam.writing;
   $("summary").innerHTML =
-    `<div class="stat est"><b>≈ ${est}</b>ציון משוער (${SC.min}–${SC.max})</div>` +
-    `<div class="stat"><b>${right}/${total}</b>תשובות נכונות (${Math.round(pct * 100)}%)</div>` +
-    secStats.map(s => `<div class="stat"><b>${s.r}/${s.n}</b>${s.name}</div>`).join("");
+    `<div class="stat est"><b id="totalScore"></b>ציון כולל משוער (מתוך ${SC.total})</div>` +
+    `<div class="stat"><b>${mc}/${SC.mcMax}</b>שאלות רב-ברירה (${right}/${total} נכונות)</div>` +
+    (hasW ? `<div class="stat"><b><input id="wScore" type="number" min="0" max="${SC.writingMax}" step="1" placeholder="—"> /${SC.writingMax}</b>הבעה בכתב (הערכה עצמית)</div>` : "");
+  const upd = () => {
+    const w = hasW ? parseFloat($("wScore").value) : 0;
+    if (hasW && isNaN(w)) { $("totalScore").textContent = "≈ " + Math.round(mc) + " + ?"; return; }
+    const wc = Math.min(SC.writingMax, Math.max(0, w || 0));
+    $("totalScore").textContent = "≈ " + Math.round(mc + wc);
+  };
+  if (hasW) $("wScore").oninput = upd;
+  upd();
   show("result"); drawReview("all");
   document.querySelectorAll(".filters button").forEach(b => b.classList.toggle("on", b.dataset.f === "all"));
 }
