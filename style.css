@@ -105,3 +105,9 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 .overlay .row{display:flex;gap:10px;justify-content:center}
 .overlay button{border:2px solid var(--green-d);background:#fff;color:var(--green-d);border-radius:20px;padding:6px 20px;font-weight:700}
 .overlay button.primary{background:var(--green-d);color:#fff}
+.box.pick{min-width:min(420px,90vw);text-align:right}
+.pick h3{margin:0 0 6px;color:var(--green-d)}
+.pick .presets{flex-wrap:wrap;margin:8px 0}
+.pklist{display:flex;flex-direction:column;gap:6px;margin:12px 0 16px}
+.pk{display:flex;gap:8px;align-items:center;font-size:1.05rem}
+.pk input{width:18px;height:18px}

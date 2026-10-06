@@ -11,7 +11,7 @@ function renderHome() {
     const b = document.createElement("button");
     b.className = "start-btn";
     b.innerHTML = `${e.title}<small>${n} שאלות · ${mins} דק׳ + כתיבה</small>`;
-    b.onclick = () => startExam(e);
+    b.onclick = () => openPicker(e);
     $("examList").appendChild(b);
   });
 }
@@ -21,8 +21,35 @@ const show = which => {
   $("result").hidden = which !== "result";
 };
 
+// ---------- בחירת חלקים ----------
+function openPicker(e) {
+  const items = e.sections.map((s, i) => ({ id: "s" + i, label: s.name + " · " + s.minutes + " דקות", grp: "mc" }));
+  if (e.writing) items.push({ id: "w", label: "הבעה בכתב · " + e.writing.minutes + " דקות", grp: "w" });
+  $("pickTitle").textContent = e.title;
+  $("pickList").innerHTML = items.map(it => `<label class="pk"><input type="checkbox" data-id="${it.id}" data-grp="${it.grp}" checked> ${it.label}</label>`).join("");
+  const setAll = fn => document.querySelectorAll("#pickList input").forEach(c => c.checked = fn(c.dataset.grp));
+  $("pickFull").onclick = () => setAll(() => true);
+  $("pickMc").onclick = () => setAll(g => g === "mc");
+  $("pickW").onclick = () => setAll(g => g === "w");
+  $("pickCancel").onclick = () => { $("pickBox").hidden = true; };
+  $("pickGo").onclick = () => {
+    const on = id => { const c = document.querySelector(`#pickList input[data-id="${id}"]`); return c && c.checked; };
+    const secs = e.sections.map((s, i) => on("s" + i) ? i : -1).filter(i => i >= 0);
+    const w = !!e.writing && on("w");
+    if (!secs.length && !w) return;
+    $("pickBox").hidden = true;
+    startExam(e, secs, w);
+  };
+  $("pickBox").hidden = false;
+}
+
 // ---------- התחלה ----------
-function startExam(e) {
+function startExam(full, secIdxs, withWriting) {
+  const e = Object.assign({}, full, {
+    sections: (secIdxs || full.sections.map((_, i) => i)).map(i => full.sections[i]),
+    writing: (withWriting === undefined ? true : withWriting) ? full.writing : null,
+    fullMc: !secIdxs || secIdxs.length === full.sections.length
+  });
   exam = e; answers = {}; flags = {}; writing = ""; finishedSecs = [];
   // flat[secIdx] = [{g, qi, num, q}] ; מספור רציף בכל פרק
   flat = e.sections.map(sec => {
@@ -130,17 +157,21 @@ function finishExam() {
   clearInterval(tick);
   let right = 0, total = 0;
   exam.sections.forEach((s, si) => flat[si].forEach((x, i) => { total++; if (answers[key(si, i)] === x.q.correct) right++; }));
-  const mc = total ? Math.round(right / total * SC.mcMax * 10) / 10 : 0;
-  const hasW = !!exam.writing;
+  const hasMc = total > 0, hasW = !!exam.writing;
+  const mc = hasMc ? Math.round(right / total * SC.mcMax * 10) / 10 : 0;
+  const both = hasMc && hasW && exam.fullMc;
+  const totalLabel = both ? `ציון כולל משוער (מתוך ${SC.total})`
+    : hasW && !hasMc ? `הבעה בכתב (מתוך ${SC.writingMax})`
+    : exam.fullMc ? `חלק הסגורות (מתוך ${SC.mcMax})` : `ציון משוער לפי הפרקים שנבחרו (מתוך ${SC.mcMax})`;
   $("summary").innerHTML =
-    `<div class="stat est"><b id="totalScore"></b>ציון כולל משוער (מתוך ${SC.total})</div>` +
-    `<div class="stat"><b>${mc}/${SC.mcMax}</b>שאלות רב-ברירה (${right}/${total} נכונות)</div>` +
+    `<div class="stat est"><b id="totalScore"></b>${totalLabel}</div>` +
+    (hasMc ? `<div class="stat"><b>${mc}/${SC.mcMax}</b>שאלות סגורות · ${right}/${total} נכונות</div>` : "") +
     (hasW ? `<div class="stat"><b><input id="wScore" type="number" min="0" max="${SC.writingMax}" step="1" placeholder="—"> /${SC.writingMax}</b>הבעה בכתב (הערכה עצמית)</div>` : "");
   const upd = () => {
     const w = hasW ? parseFloat($("wScore").value) : 0;
-    if (hasW && isNaN(w)) { $("totalScore").textContent = "≈ " + Math.round(mc) + " + ?"; return; }
     const wc = Math.min(SC.writingMax, Math.max(0, w || 0));
-    $("totalScore").textContent = "≈ " + Math.round(mc + wc);
+    if (!both) { $("totalScore").textContent = hasMc ? "≈ " + Math.round(mc) : (isNaN(w) ? "—" : String(wc)); return; }
+    $("totalScore").textContent = isNaN(w) ? "≈ " + Math.round(mc) + " + ?" : "≈ " + Math.round(mc + wc);
   };
   if (hasW) $("wScore").oninput = upd;
   upd();
