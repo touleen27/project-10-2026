@@ -12,8 +12,17 @@
 <section id="home" class="home">
   <div class="wordmark big"><span class="g">יעל</span><span class="o">נט</span></div>
   <h2>בחרו בחינה. בלחיצה על הכפתור הבחינה תחל.</h2>
+  <div class="home-nav"><button data-study="progress">📈 ההתקדמות שלי</button><button data-study="practice">🎯 תרגול</button><button data-study="words">🔤 אוצר מילים</button></div>
   <div id="examList" class="exam-list"></div>
   <p class="disclaimer">אתר תרגול עצמאי להדמיית בחינה. אינו קשור למרכז הארצי לבחינות ולהערכה. הציון המוצג הוא הערכה בלבד.</p>
+</section>
+
+<!-- למידה -->
+<section id="study" class="study" hidden>
+  <div class="wordmark"><span class="g">יעל</span><span class="o">נט</span></div>
+  <div id="studyTabs" class="filters"><button data-tab="progress">ההתקדמות שלי</button><button data-tab="practice">תרגול</button><button data-tab="words">אוצר מילים</button></div>
+  <div id="studyBody"></div>
+  <p><button id="studyHome" class="primary">חזרה לרשימת הבחינות</button></p>
 </section>
 
 <!-- מסך בחינה -->
@@ -58,6 +67,8 @@
 
 <div id="confirmBox" class="overlay" hidden><div class="box"><p id="confirmText"></p><div class="row"><button id="confirmYes" class="primary">כן, להמשיך</button><button id="confirmNo">ביטול</button></div></div></div>
 
+<div id="payBox" class="overlay" hidden><div class="box"><h3>סיימתם את הבחינות החינמיות</h3><p id="payText"></p><p class="note">התשלום עדיין לא פעיל באתר הזה.</p><button id="payClose" class="primary">סגור</button></div></div>
+
 <div id="pickBox" class="overlay" hidden><div class="box pick">
   <h3 id="pickTitle"></h3>
   <p>בחרו אילו חלקים לעשות:</p>
@@ -97,5 +108,6 @@
 <script src="exams/b17.js"></script>
 <script src="notes/b01.js"></script>
 <script src="app.js"></script>
+<script src="study.js"></script>
 </body>
 </html>

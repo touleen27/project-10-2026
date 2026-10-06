@@ -1,4 +1,5 @@
 const $ = id => document.getElementById(id);
+const PLAN = window.PLAN || {};
 const EXAMS = (window.EXAMS||[]).sort((a,b)=>a.id.localeCompare(b.id)), SC = window.SCORING;
 let exam, flat, secIdx, cur, answers, flags, timeLeft, tick, writing = "", finishedSecs;
 
@@ -38,6 +39,7 @@ function openPicker(e) {
     const w = !!e.writing && on("w");
     if (!secs.length && !w) return;
     $("pickBox").hidden = true;
+    if (window.Study && !Study.canStart(e.id)) { $("payText").textContent = `מנוי: ${PLAN.price} ${PLAN.currency} לחודש לכל הבחינות.`; $("payBox").hidden = false; $("payClose").onclick = () => { $("payBox").hidden = true; }; return; }
     startExam(e, secs, w);
   };
   $("pickBox").hidden = false;
@@ -173,8 +175,9 @@ function finishExam() {
     if (!both) { $("totalScore").textContent = hasMc ? "≈ " + Math.round(mc) : (isNaN(w) ? "—" : String(wc)); return; }
     $("totalScore").textContent = isNaN(w) ? "≈ " + Math.round(mc) + " + ?" : "≈ " + Math.round(mc + wc);
   };
-  if (hasW) $("wScore").oninput = upd;
+  if (hasW) $("wScore").oninput = () => { upd(); if (window.Study) Study.setWriting(parseFloat($("wScore").value)); };
   upd();
+  if (window.Study) Study.onFinish(exam, flat, answers, key);
   show("result"); drawReview("all");
   document.querySelectorAll(".filters button").forEach(b => b.classList.toggle("on", b.dataset.f === "all"));
 }
