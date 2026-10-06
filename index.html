@@ -3,38 +3,74 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>יעייל נט – הדמיית מבחן</title>
+<title>יעלנט – הדמיית בחינה</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><h1>יעייל נט</h1><div id="timer" hidden>00:00</div></header>
-<main>
-  <section id="start" class="card">
-    <h2 id="examTitle"></h2>
-    <p id="examInfo"></p>
-    <button id="startBtn" class="primary">התחל מבחן</button>
-  </section>
 
-  <section id="exam" class="card" hidden>
-    <div class="progress"><div id="bar"></div></div>
-    <p id="counter"></p>
-    <h2 id="question"></h2>
-    <div id="options"></div>
-    <div class="nav">
-      <button id="prevBtn">הקודם</button>
-      <button id="nextBtn" class="primary">הבא</button>
-      <button id="finishBtn" class="danger">סיים מבחן</button>
+<!-- מסך פתיחה -->
+<section id="home" class="home">
+  <div class="wordmark big"><span class="g">יעל</span><span class="o">נט</span></div>
+  <h2>בלחיצה על כפתור "לתחילת הבחינה", הבחינה תחל.</h2>
+  <div id="examList" class="exam-list"></div>
+  <p class="disclaimer">אתר תרגול עצמאי להדמיית בחינה. אינו קשור למרכז הארצי לבחינות ולהערכה. הציון המוצג הוא הערכה בלבד.</p>
+</section>
+
+<!-- מסך בחינה -->
+<div id="exam" hidden>
+  <header class="topbar">
+    <div class="tabs" id="tabs"></div>
+    <div class="wordmark"><span class="g">יעל</span><span class="o">נט</span></div>
+    <div class="timer" id="timer"><span class="clock">⏰</span><span id="timeText">20:00</span></div>
+    <button id="nextSectionBtn" class="next-section"><span class="chev">‹</span> <span id="nextSectionLabel">לפרק הבא</span></button>
+  </header>
+
+  <div class="navbar" id="navbar">
+    <button id="flagBtn" class="flag">📌 תזכורת</button>
+    <div id="qnav" class="qnav"></div>
+  </div>
+
+  <main id="stage" class="stage">
+    <button id="nextArrow" class="arrow side-next" aria-label="הבא">‹</button>
+    <div class="side-label next-label">הבא</div>
+    <div id="splitRight" class="passage-pane" hidden>
+      <button class="pill" data-instr>הוראות</button>
+      <div id="passage" class="passage"></div>
     </div>
-  </section>
+    <div class="q-pane" id="qPane">
+      <button class="pill" data-instr>הוראות</button>
+      <h3 id="qTitle" class="q-title"></h3>
+      <p id="qText" class="q-text"></p>
+      <div id="opts" class="opts"></div>
+    </div>
+    <button id="prevArrow" class="arrow side-prev" aria-label="הקודם">›</button>
+  </main>
 
-  <section id="result" class="card" hidden>
-    <h2>תוצאות</h2>
-    <p id="score" class="score"></p>
-    <div id="review"></div>
-    <button id="restartBtn" class="primary">מבחן חדש</button>
+  <section id="writing" class="writing" hidden>
+    <h3>מטלת כתיבה</h3>
+    <p id="writingPrompt"></p>
+    <textarea id="writingText" rows="14"></textarea>
   </section>
-</main>
-<script src="questions.js"></script>
+</div>
+
+<!-- חלון הוראות -->
+<dialog id="instrDlg"><p id="instrText"></p><button onclick="this.closest('dialog').close()">סגור</button></dialog>
+
+<!-- תוצאות -->
+<section id="result" class="result" hidden>
+  <div class="wordmark"><span class="g">יעל</span><span class="o">נט</span></div>
+  <h2>תוצאות הבחינה</h2>
+  <div id="summary" class="summary"></div>
+  <div class="filters">
+    <button data-f="all" class="on">הכול</button>
+    <button data-f="wrong">טעויות</button>
+    <button data-f="blank">לא נענו</button>
+  </div>
+  <div id="review"></div>
+  <button id="homeBtn" class="primary">חזרה לרשימת הבחינות</button>
+</section>
+
+<script src="exams.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

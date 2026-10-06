@@ -1,61 +1,172 @@
-const { title, minutes, questions } = window.EXAM;
 const $ = id => document.getElementById(id);
-let cur = 0, answers = [], timeLeft = 0, tick;
+const EXAMS = window.EXAMS, SC = window.SCORING;
+let exam, flat, secIdx, cur, answers, flags, timeLeft, tick, writing = "", finishedSecs;
 
-const show = id => ["start", "exam", "result"].forEach(s => $(s).hidden = s !== id);
-const fmt = s => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
-
-$("examTitle").textContent = title;
-$("examInfo").textContent = `${questions.length} שאלות • ${minutes} דקות`;
-
-function start() {
-  cur = 0; answers = new Array(questions.length).fill(null);
-  timeLeft = minutes * 60;
-  $("timer").hidden = false; $("timer").textContent = fmt(timeLeft);
-  clearInterval(tick);
-  tick = setInterval(() => {
-    $("timer").textContent = fmt(--timeLeft);
-    if (timeLeft <= 0) finish();
-  }, 1000);
-  show("exam"); render();
+// ---------- בית ----------
+function renderHome() {
+  $("examList").innerHTML = "";
+  EXAMS.forEach(e => {
+    const mins = e.sections.reduce((a, s) => a + s.minutes, 0);
+    const n = e.sections.reduce((a, s) => a + s.groups.reduce((b, g) => b + g.questions.length, 0), 0);
+    const b = document.createElement("button");
+    b.className = "start-btn";
+    b.innerHTML = `לתחילת הבחינה<small>${e.title} · ${n} שאלות · ${mins} דקות</small>`;
+    b.onclick = () => startExam(e);
+    $("examList").appendChild(b);
+  });
 }
+const show = which => {
+  $("home").hidden = which !== "home";
+  $("exam").hidden = which !== "exam";
+  $("result").hidden = which !== "result";
+};
+
+// ---------- התחלה ----------
+function startExam(e) {
+  exam = e; answers = {}; flags = {}; writing = ""; finishedSecs = [];
+  // flat[secIdx] = [{g, qi, num, q}] ; מספור רציף בכל פרק
+  flat = e.sections.map(sec => {
+    let n = 0, arr = [];
+    sec.groups.forEach((g, gi) => g.questions.forEach((q, qi) => arr.push({ gi, g, q, num: ++n })));
+    return arr;
+  });
+  show("exam");
+  enterSection(0);
+}
+
+function sectionCount() { return exam.sections.length + (exam.writing ? 1 : 0); }
+function isWriting() { return secIdx >= exam.sections.length; }
+
+function enterSection(i) {
+  secIdx = i; cur = 0;
+  clearInterval(tick);
+  const w = isWriting();
+  timeLeft = (w ? exam.writing.minutes : exam.sections[i].minutes) * 60;
+  tick = setInterval(() => { timeLeft--; drawTimer(); if (timeLeft <= 0) nextSection(true); }, 1000);
+  $("navbar").hidden = w; $("stage").hidden = w; $("writing").hidden = !w;
+  if (w) { $("writingPrompt").textContent = exam.writing.prompt; $("writingText").value = writing; }
+  $("nextSectionLabel").textContent = secIdx === sectionCount() - 1 ? "סיום הבחינה" : "לפרק הבא";
+  drawTabs(); drawTimer();
+  if (!w) render();
+}
+
+function nextSection(force) {
+  if (!force && !confirm("לא תוכל לחזור לפרק הנוכחי. להמשיך?")) return;
+  if (isWriting()) writing = $("writingText").value;
+  if (secIdx >= sectionCount() - 1) return finishExam();
+  enterSection(secIdx + 1);
+}
+
+// ---------- ציור ----------
+function drawTabs() {
+  const names = exam.sections.map(s => s.name).concat(exam.writing ? ["מטלת כתיבה"] : []);
+  $("tabs").innerHTML = names.map((n, i) =>
+    `<div class="tab ${i === secIdx ? "cur" : i < secIdx ? "done" : ""}">${n}</div>`).join("");
+}
+function drawTimer() {
+  const t = Math.max(0, timeLeft);
+  $("timeText").textContent = String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+  $("timer").classList.toggle("low", t <= 300);
+}
+const key = (s, i) => s + ":" + i;
 
 function render() {
-  const q = questions[cur];
-  $("counter").textContent = `שאלה ${cur + 1} מתוך ${questions.length}`;
-  $("bar").style.width = ((cur + 1) / questions.length * 100) + "%";
-  $("question").textContent = q.q;
-  $("options").innerHTML = "";
-  q.options.forEach((o, i) => {
+  const items = flat[secIdx], it = items[cur], g = it.g;
+  // ניווט שאלות
+  const groups = [];
+  items.forEach((x, i) => { (groups[x.gi] = groups[x.gi] || []).push(i); });
+  $("qnav").innerHTML = "";
+  groups.forEach((idxs, gi) => {
+    const box = document.createElement("div");
+    box.className = "ngroup" + (gi === it.gi ? " cur" : "");
+    box.innerHTML = `<div class="glabel">${gi === it.gi ? (g.label || "") : ""}</div><div class="circles"></div>`;
+    idxs.forEach(i => {
+      const b = document.createElement("button");
+      const k = key(secIdx, i);
+      b.className = "qn" + (answers[k] !== undefined ? " ans" : "") + (i === cur ? " cur" : "") + (flags[k] ? " flagged" : "");
+      b.textContent = items[i].num;
+      b.onclick = () => { cur = i; render(); };
+      box.querySelector(".circles").appendChild(b);
+    });
+    $("qnav").appendChild(box);
+  });
+  // שאלה
+  const split = !!g.passage;
+  $("stage").classList.toggle("split", split);
+  $("splitRight").hidden = !split;
+  if (split) $("passage").innerHTML = g.passage.split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join("");
+  $("qTitle").textContent = "שאלה " + it.num;
+  $("qText").textContent = it.q.q;
+  $("opts").innerHTML = "";
+  const k = key(secIdx, cur);
+  it.q.options.forEach((o, i) => {
     const b = document.createElement("button");
-    b.className = "opt" + (answers[cur] === i ? " sel" : "");
-    b.textContent = o;
-    b.onclick = () => { answers[cur] = i; render(); };
-    $("options").appendChild(b);
+    b.className = "opt" + (answers[k] === i ? " sel" : "");
+    b.innerHTML = `<span class="radio"><i></i></span><span class="otxt">${esc(o)}</span>`;
+    b.onclick = () => { answers[k] = i; render(); };
+    $("opts").appendChild(b);
   });
-  $("prevBtn").disabled = cur === 0;
-  $("nextBtn").disabled = cur === questions.length - 1;
+  $("flagBtn").classList.toggle("on", !!flags[k]);
+  $("nextArrow").disabled = cur === items.length - 1;
+  $("prevArrow").disabled = cur === 0;
 }
+const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
-function finish() {
+// ---------- תוצאות ----------
+function finishExam() {
   clearInterval(tick);
-  $("timer").hidden = true;
-  const right = questions.filter((q, i) => answers[i] === q.correct).length;
-  $("score").textContent = `ציון: ${Math.round(right / questions.length * 100)} (${right}/${questions.length})`;
-  $("review").innerHTML = "";
-  questions.forEach((q, i) => {
-    const ok = answers[i] === q.correct;
-    const d = document.createElement("div");
-    d.className = "rev " + (ok ? "ok" : "no");
-    const mine = answers[i] === null ? "לא נענתה" : q.options[answers[i]];
-    d.innerHTML = `<b>${i + 1}. ${q.q}</b><br>התשובה שלך: ${mine}<br>התשובה הנכונה: ${q.options[q.correct]}<br><small>${q.explain || ""}</small>`;
-    $("review").appendChild(d);
+  let right = 0, total = 0;
+  const secStats = exam.sections.map((s, si) => {
+    let r = 0;
+    flat[si].forEach((x, i) => { total++; if (answers[key(si, i)] === x.q.correct) { r++; right++; } });
+    return { name: s.name, r, n: flat[si].length };
   });
-  show("result");
+  const pct = total ? right / total : 0;
+  const est = Math.round(SC.min + (SC.max - SC.min) * pct);
+  $("summary").innerHTML =
+    `<div class="stat est"><b>≈ ${est}</b>ציון משוער (${SC.min}–${SC.max})</div>` +
+    `<div class="stat"><b>${right}/${total}</b>תשובות נכונות (${Math.round(pct * 100)}%)</div>` +
+    secStats.map(s => `<div class="stat"><b>${s.r}/${s.n}</b>${s.name}</div>`).join("");
+  show("result"); drawReview("all");
+  document.querySelectorAll(".filters button").forEach(b => b.classList.toggle("on", b.dataset.f === "all"));
 }
 
-$("startBtn").onclick = start;
-$("prevBtn").onclick = () => { cur--; render(); };
-$("nextBtn").onclick = () => { cur++; render(); };
-$("finishBtn").onclick = () => { if (confirm("לסיים את המבחן?")) finish(); };
-$("restartBtn").onclick = () => show("start");
+function drawReview(f) {
+  $("review").innerHTML = "";
+  exam.sections.forEach((s, si) => flat[si].forEach((x, i) => {
+    const a = answers[key(si, i)], blank = a === undefined, ok = a === x.q.correct;
+    if (f === "wrong" && (ok || blank)) return;
+    if (f === "blank" && !blank) return;
+    const d = document.createElement("div");
+    d.className = "rev " + (blank ? "blank" : ok ? "ok" : "no");
+    d.innerHTML = `<b>${s.name} · שאלה ${x.num}${x.g.label ? " (" + x.g.label + ")" : ""}</b><p>${esc(x.q.q)}</p>` +
+      x.q.options.map((o, oi) => `<div class="ro ${oi === x.q.correct ? "right" : oi === a ? "mine" : ""}">${oi === x.q.correct ? "✔" : oi === a ? "✘" : "•"} ${esc(o)}</div>`).join("") +
+      (blank ? "<small>לא נענתה</small>" : "") + (x.q.explain ? `<br><small>${esc(x.q.explain)}</small>` : "");
+    $("review").appendChild(d);
+  }));
+  if (!$("review").children.length) $("review").innerHTML = "<p>אין שאלות להצגה.</p>";
+}
+
+// ---------- אירועים ----------
+$("nextSectionBtn").onclick = () => nextSection(false);
+$("nextArrow").onclick = () => { if (cur < flat[secIdx].length - 1) { cur++; render(); } };
+$("prevArrow").onclick = () => { if (cur > 0) { cur--; render(); } };
+$("flagBtn").onclick = () => { const k = key(secIdx, cur); flags[k] = !flags[k]; render(); };
+document.addEventListener("click", e => {
+  if (e.target.matches("[data-instr]")) {
+    $("instrText").textContent = flat[secIdx][cur].g.instructions || "בחרו את התשובה המתאימה ביותר.";
+    $("instrDlg").showModal();
+  }
+});
+document.querySelectorAll(".filters button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".filters button").forEach(x => x.classList.toggle("on", x === b));
+  drawReview(b.dataset.f);
+});
+$("homeBtn").onclick = () => show("home");
+document.addEventListener("keydown", e => {
+  if ($("exam").hidden || isWriting()) return;
+  if (e.key === "ArrowLeft") $("nextArrow").click();
+  if (e.key === "ArrowRight") $("prevArrow").click();
+});
+
+renderHome(); show("home");
