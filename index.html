@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>יעייל נט – הדמיית מבחן</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>יעייל נט</h1><div id="timer" hidden>00:00</div></header>
+<main>
+  <section id="start" class="card">
+    <h2 id="examTitle"></h2>
+    <p id="examInfo"></p>
+    <button id="startBtn" class="primary">התחל מבחן</button>
+  </section>
+
+  <section id="exam" class="card" hidden>
+    <div class="progress"><div id="bar"></div></div>
+    <p id="counter"></p>
+    <h2 id="question"></h2>
+    <div id="options"></div>
+    <div class="nav">
+      <button id="prevBtn">הקודם</button>
+      <button id="nextBtn" class="primary">הבא</button>
+      <button id="finishBtn" class="danger">סיים מבחן</button>
+    </div>
+  </section>
+
+  <section id="result" class="card" hidden>
+    <h2>תוצאות</h2>
+    <p id="score" class="score"></p>
+    <div id="review"></div>
+    <button id="restartBtn" class="primary">מבחן חדש</button>
+  </section>
+</main>
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
