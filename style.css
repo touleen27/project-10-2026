@@ -97,3 +97,6 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 .stage.split .q-pane{padding-left:150px}
 .stage.split .arrow{top:40%}
 #wScore{width:70px;font:inherit;font-size:1.6rem;text-align:center;border:2px solid var(--line);border-radius:8px}
+.ln{display:inline-block;margin:0 6px;padding:0 5px;font-size:.75rem;font-weight:700;color:var(--green-d);border:1px solid var(--green);border-radius:4px;vertical-align:super}
+.exam-list{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:760px}
+.start-btn{min-width:150px}

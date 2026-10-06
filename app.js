@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const EXAMS = window.EXAMS, SC = window.SCORING;
+const EXAMS = (window.EXAMS||[]).sort((a,b)=>a.id.localeCompare(b.id)), SC = window.SCORING;
 let exam, flat, secIdx, cur, answers, flags, timeLeft, tick, writing = "", finishedSecs;
 
 // ---------- בית ----------
@@ -10,7 +10,7 @@ function renderHome() {
     const n = e.sections.reduce((a, s) => a + s.groups.reduce((b, g) => b + g.questions.length, 0), 0);
     const b = document.createElement("button");
     b.className = "start-btn";
-    b.innerHTML = `לתחילת הבחינה<small>${e.title} · ${n} שאלות · ${mins} דקות</small>`;
+    b.innerHTML = `${e.title}<small>${n} שאלות · ${mins} דק׳ + כתיבה</small>`;
     b.onclick = () => startExam(e);
     $("examList").appendChild(b);
   });
@@ -94,7 +94,7 @@ function render() {
   const split = !!g.passage;
   $("stage").classList.toggle("split", split);
   $("splitRight").hidden = !split;
-  if (split) $("passage").innerHTML = g.passage.split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join("");
+  if (split) $("passage").innerHTML = g.passage.split(/\n\n+/).map(p => `<p>${esc(p).replace(/⟦(\d+)⟧/g, '<span class="ln">$1</span>')}</p>`).join("");
   $("qTitle").textContent = "שאלה " + it.num;
   $("qText").textContent = it.q.q;
   $("opts").innerHTML = "";
