@@ -111,3 +111,17 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 .pklist{display:flex;flex-direction:column;gap:6px;margin:12px 0 16px}
 .pk{display:flex;gap:8px;align-items:center;font-size:1.05rem}
 .pk input{width:18px;height:18px}
+
+.why{margin-top:10px;background:var(--mint-l);border:1px solid var(--mint);border-radius:8px;padding:8px 12px}
+.why summary{cursor:pointer;font-weight:700;color:var(--green-d)}
+.why p{margin:8px 0;line-height:1.7;direction:rtl}
+.vws{display:flex;flex-wrap:wrap;gap:6px}
+.vw{background:#fff;border:1px solid var(--line);border-radius:14px;padding:2px 10px;font-size:.9rem}
+.vw b{color:var(--orange)}
+.vtools{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:.95rem}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.vcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;text-align:right}
+.vcard.bad{border-color:var(--orange);background:#fff7ef}
+.vcard b{font-size:1.15rem;color:var(--green-d)}
+.hide-ar .vcard .ar{visibility:hidden}.hide-ar .vcard.show .ar{visibility:visible}
+.hide-ar .vcard{cursor:pointer}

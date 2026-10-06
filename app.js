@@ -179,20 +179,54 @@ function finishExam() {
   document.querySelectorAll(".filters button").forEach(b => b.classList.toggle("on", b.dataset.f === "all"));
 }
 
+function noteFor(s, x) {
+  const n = (window.NOTES || {})[exam.id];
+  const sn = (s.name.match(/\d+/) || [0])[0];
+  return n && n[sn + "." + x.num];
+}
+function vocabChips(v) {
+  return (v || []).map(p => `<span class="vw"><b>${esc(p[0])}</b> ${esc(p[1])}</span>`).join("");
+}
 function drawReview(f) {
   $("review").innerHTML = "";
+  if (f === "vocab") return drawVocab();
   exam.sections.forEach((s, si) => flat[si].forEach((x, i) => {
     const a = answers[key(si, i)], blank = a === undefined, ok = a === x.q.correct;
     if (f === "wrong" && (ok || blank)) return;
     if (f === "blank" && !blank) return;
     const d = document.createElement("div");
     d.className = "rev " + (blank ? "blank" : ok ? "ok" : "no");
+    const nt = noteFor(s, x);
+    const why = nt ? `<details class="why" ${ok ? "" : "open"}><summary>למה? · لماذا؟</summary><p>${esc(nt[0])}</p>${nt[1].length ? `<div class="vws">${vocabChips(nt[1])}</div>` : ""}</details>` : "";
     d.innerHTML = `<b>${s.name} · שאלה ${x.num}${x.g.label ? " (" + x.g.label + ")" : ""}</b><p>${esc(x.q.q)}</p>` +
       x.q.options.map((o, oi) => `<div class="ro ${oi === x.q.correct ? "right" : oi === a ? "mine" : ""}">${oi === x.q.correct ? "✔" : oi === a ? "✘" : "•"} ${esc(o)}</div>`).join("") +
-      (blank ? "<small>לא נענתה</small>" : "") + (x.q.explain ? `<br><small>${esc(x.q.explain)}</small>` : "");
+      (blank ? "<small>לא נענתה</small>" : "") + why;
     $("review").appendChild(d);
   }));
   if (!$("review").children.length) $("review").innerHTML = "<p>אין שאלות להצגה.</p>";
+}
+
+// אוצר מילים: מילים מהשאלות, קודם מהשאלות שנענו לא נכון
+function drawVocab() {
+  const seen = new Map();
+  const add = (w, ar, bad) => {
+    const cur = seen.get(w[0]);
+    if (!cur) seen.set(w[0], { he: w[0], ar: w[1], bad });
+    else if (bad) cur.bad = true;
+  };
+  exam.sections.forEach((s, si) => flat[si].forEach((x, i) => {
+    const nt = noteFor(s, x); if (!nt) return;
+    const bad = answers[key(si, i)] !== x.q.correct;
+    nt[1].forEach(w => add(w, w[1], bad));
+  }));
+  const all = [...seen.values()].sort((p, q) => (q.bad - p.bad));
+  if (!all.length) { $("review").innerHTML = "<p>עדיין אין אוצר מילים לבחינה זו.</p>"; return; }
+  const bad = all.filter(w => w.bad).length;
+  $("review").innerHTML = `<div class="vtools"><label><input type="checkbox" id="hideAr"> הסתר תרגום (לתרגול)</label><span>${all.length} מילים · ${bad} משאלות שטעיתם בהן או שלא נענו</span></div>
+    <div class="vgrid">${all.map(w => `<div class="vcard ${w.bad ? "bad" : ""}"><b>${esc(w.he)}</b><span class="ar">${esc(w.ar)}</span></div>`).join("")}</div>`;
+  $("hideAr").onchange = e => $("review").classList.toggle("hide-ar", e.target.checked);
+  $("review").classList.remove("hide-ar");
+  $("review").onclick = e => { const c = e.target.closest(".vcard"); if (c && $("review").classList.contains("hide-ar")) c.classList.toggle("show"); };
 }
 
 // ---------- אירועים ----------
