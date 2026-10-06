@@ -39,10 +39,24 @@ function openPicker(e) {
     const w = !!e.writing && on("w");
     if (!secs.length && !w) return;
     $("pickBox").hidden = true;
-    if (window.Study && !Study.canStart(e.id)) { $("payText").textContent = `מנוי: ${PLAN.price} ${PLAN.currency} לחודש לכל הבחינות.`; $("payBox").hidden = false; $("payClose").onclick = () => { $("payBox").hidden = true; }; return; }
+    if (window.Study && !Study.canStart(e.id)) { openPay(); return; }
     startExam(e, secs, w);
   };
   $("pickBox").hidden = false;
+}
+
+function openPay() {
+  $("payText").textContent = `מנוי: ${PLAN.price} ${PLAN.currency} לחודש, גישה לכל הבחינות, ההסברים ואוצר המילים.`;
+  const msg = encodeURIComponent("שלום, שילמתי על מנוי יעלנט ואשמח לקבל קוד גישה.");
+  $("payLinks").innerHTML = (PLAN.bitLink ? `<a class="btn primary" href="${PLAN.bitLink}" target="_blank" rel="noopener">לתשלום ב-Bit</a>` : "") +
+    (PLAN.whatsapp ? `<a class="btn" href="https://wa.me/${PLAN.whatsapp}?text=${msg}" target="_blank" rel="noopener">שליחת אישור בוואטסאפ</a>` : "");
+  $("codeMsg").textContent = "";
+  $("payBox").hidden = false;
+  $("payClose").onclick = () => { $("payBox").hidden = true; };
+  $("codeGo").onclick = async () => {
+    if (await Study.unlock($("codeIn").value)) { $("payBox").hidden = true; $("codeIn").value = ""; }
+    else $("codeMsg").textContent = "הקוד לא תקין או שפג תוקפו.";
+  };
 }
 
 // ---------- התחלה ----------

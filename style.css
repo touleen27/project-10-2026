@@ -149,3 +149,10 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 #studyBody .row{display:flex;gap:10px;justify-content:center;margin:10px 0}
 #studyBody button:not(.opt){border:2px solid var(--green-d);background:#fff;color:var(--green-d);border-radius:20px;padding:6px 18px;font-weight:700}
 #studyBody button.primary{background:var(--green-d);color:#fff}
+.box.pay{max-width:min(440px,92vw);text-align:right}
+.paysteps{padding-inline-start:20px;line-height:1.8}
+.btn{display:inline-block;text-decoration:none;border:2px solid var(--green-d);border-radius:20px;padding:6px 18px;font-weight:700;color:var(--green-d);background:#fff}
+.btn.primary{background:var(--green-d);color:#fff}
+.pay .row{flex-wrap:wrap;margin:10px 0}
+#codeIn{font:inherit;padding:6px 10px;border:2px solid var(--line);border-radius:8px;text-transform:uppercase;direction:ltr;text-align:center}
+.pay>button{border:2px solid var(--line);background:#fff;border-radius:20px;padding:4px 16px}

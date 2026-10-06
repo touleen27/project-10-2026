@@ -67,7 +67,15 @@
 
 <div id="confirmBox" class="overlay" hidden><div class="box"><p id="confirmText"></p><div class="row"><button id="confirmYes" class="primary">כן, להמשיך</button><button id="confirmNo">ביטול</button></div></div></div>
 
-<div id="payBox" class="overlay" hidden><div class="box"><h3>סיימתם את הבחינות החינמיות</h3><p id="payText"></p><p class="note">התשלום עדיין לא פעיל באתר הזה.</p><button id="payClose" class="primary">סגור</button></div></div>
+<div id="payBox" class="overlay" hidden><div class="box pay">
+  <h3>סיימתם את הבחינות החינמיות</h3>
+  <p id="payText"></p>
+  <ol class="paysteps"><li>משלמים ב-Bit.</li><li>שולחים לנו צילום מסך של התשלום.</li><li>מקבלים קוד גישה ומזינים אותו כאן.</li></ol>
+  <div class="row" id="payLinks"></div>
+  <div class="row"><input id="codeIn" placeholder="קוד גישה" autocomplete="off"><button id="codeGo" class="primary">הפעלה</button></div>
+  <p id="codeMsg" class="note"></p>
+  <button id="payClose">סגור</button>
+</div></div>
 
 <div id="pickBox" class="overlay" hidden><div class="box pick">
   <h3 id="pickTitle"></h3>

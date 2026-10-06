@@ -46,8 +46,18 @@ window.Study = (() => {
     const a = db.attempts[db.last]; if (!a) return;
     a.writing = isNaN(score) ? null : score; save();
   }
+  const unlocked = () => { try { const u = JSON.parse(localStorage.getItem(KEY + ".unlock")); return !!u && u.until >= new Date().toISOString().slice(0, 10) && (PLAN.codes || []).some(c => c.h === u.h && c.until === u.until); } catch (e) { return false; } };
+  async function unlock(code) {
+    try {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code.trim().toUpperCase()));
+      const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+      const c = (PLAN.codes || []).find(x => x.h === h);
+      if (!c || c.until < new Date().toISOString().slice(0, 10)) return false;
+      localStorage.setItem(KEY + ".unlock", JSON.stringify(c)); return true;
+    } catch (e) { return false; }
+  }
   function canStart(id) {
-    if (!PLAN.paywall || PLAN.premium) return true;
+    if (!PLAN.paywall || PLAN.premium || unlocked()) return true;
     if (db.started.includes(id)) return true;
     if (db.started.length < PLAN.freeExams) { db.started.push(id); save(); return true; }
     return false;
@@ -154,7 +164,7 @@ window.Study = (() => {
     $("kn").onclick = () => rate(true); $("dk").onclick = () => rate(false);
   }
 
-  return { onFinish, setWriting, canStart, open, mistakesCount: () => Object.keys(db.mistakes).length };
+  return { onFinish, setWriting, canStart, unlock, open, mistakesCount: () => Object.keys(db.mistakes).length };
 })();
 document.querySelectorAll("[data-study]").forEach(b => b.onclick = () => Study.open(b.dataset.study));
 document.querySelectorAll("#studyTabs button").forEach(b => b.onclick = () => Study.open(b.dataset.tab));
