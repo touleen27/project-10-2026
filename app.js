@@ -48,7 +48,7 @@ function openPicker(e) {
 
 function openPay() {
   $("payText").textContent = `מנוי: ${PLAN.price} ${PLAN.currency} לחודש, גישה לכל הבחינות, ההסברים ואוצר המילים.`;
-  const msg = encodeURIComponent("שלום, שילמתי על מנוי יעלנט ואשמח לקבל קוד גישה.");
+  const msg = encodeURIComponent("שלום, שילמתי על מנוי יעל Boost ואשמח לקבל קוד גישה.");
   $("payLinks").innerHTML = (PLAN.bitLink ? `<a class="btn primary" href="${PLAN.bitLink}" target="_blank" rel="noopener">לתשלום ב-Bit</a>` : "") +
     (PLAN.whatsapp ? `<a class="btn" href="https://wa.me/${PLAN.whatsapp}?text=${msg}" target="_blank" rel="noopener">שליחת אישור בוואטסאפ</a>` : "");
   $("codeMsg").textContent = window.Cloud && Cloud.user() ? "מחוברים בתור " + Cloud.user().email + ". אחרי התשלום נפעיל לכם את המנוי לחשבון הזה." : "";
