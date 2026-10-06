@@ -40,6 +40,7 @@ function openPicker(e) {
     if (!secs.length && !w) return;
     $("pickBox").hidden = true;
     if (window.Study && !Study.canStart(e.id)) { openPay(); return; }
+    if (window.Cloud) Cloud.log("exam_start", { exam: e.id });
     startExam(e, secs, w);
   };
   $("pickBox").hidden = false;
@@ -50,7 +51,8 @@ function openPay() {
   const msg = encodeURIComponent("שלום, שילמתי על מנוי יעלנט ואשמח לקבל קוד גישה.");
   $("payLinks").innerHTML = (PLAN.bitLink ? `<a class="btn primary" href="${PLAN.bitLink}" target="_blank" rel="noopener">לתשלום ב-Bit</a>` : "") +
     (PLAN.whatsapp ? `<a class="btn" href="https://wa.me/${PLAN.whatsapp}?text=${msg}" target="_blank" rel="noopener">שליחת אישור בוואטסאפ</a>` : "");
-  $("codeMsg").textContent = "";
+  $("codeMsg").textContent = window.Cloud && Cloud.user() ? "מחוברים בתור " + Cloud.user().email + ". אחרי התשלום נפעיל לכם את המנוי לחשבון הזה." : "";
+  if (window.Cloud) Cloud.log("paywall_view");
   $("payBox").hidden = false;
   $("payClose").onclick = () => { $("payBox").hidden = true; };
   $("codeGo").onclick = async () => {
@@ -192,6 +194,7 @@ function finishExam() {
   if (hasW) $("wScore").oninput = () => { upd(); if (window.Study) Study.setWriting(parseFloat($("wScore").value)); };
   upd();
   if (window.Study) Study.onFinish(exam, flat, answers, key);
+  if (window.Cloud) Cloud.log("exam_finish", { exam: exam.id, right, total });
   show("result"); drawReview("all");
   document.querySelectorAll(".filters button").forEach(b => b.classList.toggle("on", b.dataset.f === "all"));
 }

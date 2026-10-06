@@ -6,7 +6,7 @@ window.Study = (() => {
   const DAY = 864e5, BOX = [0, 1, 3, 7, 14];
   let db;
   const load = () => { try { db = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { db = {}; } db.attempts = db.attempts || []; db.mistakes = db.mistakes || {}; db.words = db.words || {}; db.started = db.started || []; };
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} if (window.Cloud) Cloud.push(); };
   load();
 
   // כל השאלות במאגר
@@ -57,7 +57,7 @@ window.Study = (() => {
     } catch (e) { return false; }
   }
   function canStart(id) {
-    if (!PLAN.paywall || PLAN.premium || unlocked()) return true;
+    if (!PLAN.paywall || PLAN.premium || unlocked() || (window.Cloud && Cloud.isPremium())) return true;
     if (db.started.includes(id)) return true;
     if (db.started.length < PLAN.freeExams) { db.started.push(id); save(); return true; }
     return false;
@@ -164,7 +164,18 @@ window.Study = (() => {
     $("kn").onclick = () => rate(true); $("dk").onclick = () => rate(false);
   }
 
-  return { onFinish, setWriting, canStart, unlock, open, mistakesCount: () => Object.keys(db.mistakes).length };
+  // איחוד נתונים מהענן עם המקומיים
+  function merge(r) {
+    if (!r) return;
+    const seen = new Set(db.attempts.map(a => a.t));
+    (r.attempts || []).forEach(a => { if (!seen.has(a.t)) db.attempts.push(a); });
+    db.attempts.sort((a, b) => a.t - b.t); db.last = db.attempts.length - 1;
+    Object.assign(db.mistakes, r.mistakes || {});
+    Object.entries(r.words || {}).forEach(([w, c]) => { if (!db.words[w] || c.due > db.words[w].due) db.words[w] = c; });
+    db.started = [...new Set(db.started.concat(r.started || []))];
+    try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {}
+  }
+  return { merge, data: () => db, onFinish, setWriting, canStart, unlock, open, mistakesCount: () => Object.keys(db.mistakes).length };
 })();
 document.querySelectorAll("[data-study]").forEach(b => b.onclick = () => Study.open(b.dataset.study));
 document.querySelectorAll("#studyTabs button").forEach(b => b.onclick = () => Study.open(b.dataset.tab));

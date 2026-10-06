@@ -12,7 +12,7 @@
 <section id="home" class="home">
   <div class="wordmark big"><span class="g">יעל</span><span class="o">נט</span></div>
   <h2>בחרו בחינה. בלחיצה על הכפתור הבחינה תחל.</h2>
-  <div class="home-nav"><button data-study="progress">📈 ההתקדמות שלי</button><button data-study="practice">🎯 תרגול</button><button data-study="words">🔤 אוצר מילים</button></div>
+  <div class="home-nav"><button data-study="progress">📈 ההתקדמות שלי</button><button data-study="practice">🎯 תרגול</button><button data-study="words">🔤 אוצר מילים</button><button id="accBtn" hidden>👤 התחברות</button></div>
   <div id="examList" class="exam-list"></div>
   <p class="disclaimer">אתר תרגול עצמאי להדמיית בחינה. אינו קשור למרכז הארצי לבחינות ולהערכה. הציון המוצג הוא הערכה בלבד.</p>
 </section>
@@ -67,6 +67,20 @@
 
 <div id="confirmBox" class="overlay" hidden><div class="box"><p id="confirmText"></p><div class="row"><button id="confirmYes" class="primary">כן, להמשיך</button><button id="confirmNo">ביטול</button></div></div></div>
 
+<div id="accBox" class="overlay" hidden><div class="box pay">
+  <h3>החשבון שלי</h3>
+  <p id="accInfo"></p>
+  <div id="accIn">
+    <div class="row"><button id="accGoogle" class="primary">התחברות עם Google</button></div>
+    <p class="note">או עם אימייל וסיסמה:</p>
+    <div class="row"><input id="accEmail" type="email" placeholder="אימייל" dir="ltr"><input id="accPass" type="password" placeholder="סיסמה (6+ תווים)" dir="ltr"></div>
+    <div class="row"><button id="accLogin" class="primary">כניסה</button><button id="accSignup">הרשמה</button></div>
+  </div>
+  <div id="accOut" class="row" hidden><button id="accLogout">התנתקות</button></div>
+  <p id="accMsg" class="note"></p>
+  <button id="accClose">סגור</button>
+</div></div>
+
 <div id="payBox" class="overlay" hidden><div class="box pay">
   <h3>סיימתם את הבחינות החינמיות</h3>
   <p id="payText"></p>
@@ -117,5 +131,7 @@
 <script src="notes/b01.js"></script>
 <script src="app.js"></script>
 <script src="study.js"></script>
+<script src="firebase-config.js"></script>
+<script src="cloud.js"></script>
 </body>
 </html>

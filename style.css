@@ -156,3 +156,7 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 .pay .row{flex-wrap:wrap;margin:10px 0}
 #codeIn{font:inherit;padding:6px 10px;border:2px solid var(--line);border-radius:8px;text-transform:uppercase;direction:ltr;text-align:center}
 .pay>button{border:2px solid var(--line);background:#fff;border-radius:20px;padding:4px 16px}
+#accEmail,#accPass{font:inherit;padding:6px 10px;border:2px solid var(--line);border-radius:8px}
+#accBox .row{flex-wrap:wrap;display:flex;gap:8px;justify-content:center;margin:8px 0}
+#accBox button{border:2px solid var(--green-d);background:#fff;color:var(--green-d);border-radius:20px;padding:6px 18px;font-weight:700}
+#accBox button.primary{background:var(--green-d);color:#fff}

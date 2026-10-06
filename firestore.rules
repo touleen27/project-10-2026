@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // התקדמות המשתמש: קריאה וכתיבה רק לבעלים
+    match /userData/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // מנוי: המשתמש רק קורא. כותבים אותו ידנית בקונסול (Admin) אחרי שהתקבל תשלום
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
