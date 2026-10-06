@@ -42,7 +42,12 @@ function enterSection(i) {
   clearInterval(tick);
   const w = isWriting();
   timeLeft = (w ? exam.writing.minutes : exam.sections[i].minutes) * 60;
-  tick = setInterval(() => { timeLeft--; drawTimer(); if (timeLeft <= 0) nextSection(true); }, 1000);
+  const endAt = Date.now() + timeLeft * 1000;
+  tick = setInterval(() => {
+    timeLeft = Math.ceil((endAt - Date.now()) / 1000);
+    drawTimer();
+    if (timeLeft <= 0) { clearInterval(tick); nextSection(true); }
+  }, 250);
   $("navbar").hidden = w; $("stage").hidden = w; $("writing").hidden = !w;
   if (w) { $("writingPrompt").textContent = exam.writing.prompt; $("writingText").value = writing; }
   $("nextSectionLabel").textContent = secIdx === sectionCount() - 1 ? "סיום הבחינה" : "לפרק הבא";
@@ -50,8 +55,15 @@ function enterSection(i) {
   if (!w) render();
 }
 
+function askConfirm(msg, onYes) {
+  $("confirmText").textContent = msg;
+  $("confirmBox").hidden = false;
+  $("confirmYes").onclick = () => { $("confirmBox").hidden = true; onYes(); };
+  $("confirmNo").onclick = () => { $("confirmBox").hidden = true; };
+}
+
 function nextSection(force) {
-  if (!force && !confirm("לא תוכל לחזור לפרק הנוכחי. להמשיך?")) return;
+  if (!force) return askConfirm("לא תוכל לחזור לפרק הנוכחי. להמשיך?", () => nextSection(true));
   if (isWriting()) writing = $("writingText").value;
   if (secIdx >= sectionCount() - 1) return finishExam();
   enterSection(secIdx + 1);

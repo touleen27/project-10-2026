@@ -100,3 +100,8 @@ dialog button{background:var(--green-d);color:#fff;border:0;border-radius:20px;p
 .ln{display:inline-block;margin:0 6px;padding:0 5px;font-size:.75rem;font-weight:700;color:var(--green-d);border:1px solid var(--green);border-radius:4px;vertical-align:super}
 .exam-list{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:760px}
 .start-btn{min-width:150px}
+.overlay{position:fixed;inset:0;background:#0006;display:flex;align-items:center;justify-content:center;z-index:50}
+.overlay .box{background:#fff;border:2px solid var(--green-d);border-radius:12px;padding:20px 28px;text-align:center;max-width:90vw}
+.overlay .row{display:flex;gap:10px;justify-content:center}
+.overlay button{border:2px solid var(--green-d);background:#fff;color:var(--green-d);border-radius:20px;padding:6px 20px;font-weight:700}
+.overlay button.primary{background:var(--green-d);color:#fff}
